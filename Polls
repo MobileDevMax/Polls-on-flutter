@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Polls',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PollListScreen(),
+    );
+  }
+}
+
+class Poll {
+  final String question;
+  final List<String> options;
+  final List<int> votes;
+
+  Poll(this.question, this.options) : votes = List.filled(options.length, 0);
+}
+
+class PollListScreen extends StatelessWidget {
+  final List<Poll> polls = [
+    Poll("What is your favorite color?", ["Red", "Green", "Blue", "Yellow"]),
+    Poll("What is your favorite fruit?", ["Apple", "Banana", "Orange", "Grapes"]),
+    Poll("What is your favorite dish?", ["Omelette", "Soup", "Puree", "Porridge"]),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Polls'),
+      ),
+      body: ListView.builder(
+        itemCount: polls.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(polls[index].question),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PollDetailScreen(poll: polls[index]),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class PollDetailScreen extends StatefulWidget {
+  final Poll poll;
+
+  PollDetailScreen({required this.poll});
+
+  @override
+  _PollDetailScreenState createState() => _PollDetailScreenState();
+}
+
+class _PollDetailScreenState extends State<PollDetailScreen> {
+  int? votedOption;
+
+  void vote(int index) {
+    if (votedOption == null) {
+      setState(() {
+        widget.poll.votes[index]++;
+        votedOption = index; // User voted for this option
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.poll.question),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: widget.poll.options.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(widget.poll.options[index]),
+                  trailing: Text('${widget.poll.votes[index]} votes'),
+                  selected: votedOption == index,
+                  onTap: () => vote(index),
+                );
+              },
+            ),
+          ),
+          if (votedOption != null)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'You voted for: ${widget.poll.options[votedOption!]}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
